@@ -1,0 +1,1378 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "id": "71be2b4d-3414-43cb-885a-69ab49ec210b",
+      "name": "Schedule Trigger - Email Check",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -3300,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "simple": false,
+        "filters": {},
+        "options": {}
+      },
+      "id": "2b223d1c-30f5-4a70-837b-d1420c5616a7",
+      "name": "Gmail - Get Unread Messages",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -3080,
+        240
+      ],
+      "webhookId": "f17973c8-de01-4b25-b461-1b86f5019cde",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "uEx8jgP9x4FK6eZj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "condition1",
+              "leftValue": "={{ $items.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "6ca2e823-793e-472b-9d39-bdc47c026acc",
+      "name": "IF - Has New Emails",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -2860,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "batchSize": "={{ $items.length }}",
+        "options": {
+          "reset": false
+        }
+      },
+      "id": "ed774ce1-b51a-471e-99bd-1fa0676406d3",
+      "name": "Split In Batches - Process Individual Emails",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -2500,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $json.id }}",
+        "simple": false,
+        "options": {}
+      },
+      "id": "8220eb53-c18d-444b-ac11-2be535ab2f7c",
+      "name": "Gmail - Get Message Details",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -2220,
+        420
+      ],
+      "webhookId": "8e79a01a-2573-4ff7-ae0f-d98403dc4b25",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "uEx8jgP9x4FK6eZj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "const input = $input.first().json;\n\n// Fallback for subject if it's nested\nlet subject = input.subject || 'No Subject';\nif (typeof subject === 'object' && subject?.value) {\n  subject = subject.value;\n}\n\n// Extract sender info\nlet from = input.from?.text || input.from || '';\nlet senderEmail = input.from?.value?.[0]?.address || '';\nlet senderName = input.from?.value?.[0]?.name || '';\n\n// Extract recipient\nlet to = input.to?.text || input.to || '';\n\n// Extract and clean body\nlet body = input.text || input.html || '';\nbody = body.replace(/<[^>]*>/g, ' ').replace(/\\s+/g, ' ').trim();\n\n// Final output object\nreturn {\n  emailId: input.id,\n  threadId: input.threadId,\n  subject,\n  from,\n  senderEmail,\n  senderName,\n  to,\n  date: input.date || '',\n  messageId: input.messageId || '',\n  body: body.slice(0, 4000),\n  snippet: input.snippet || '',\n  timestamp: new Date().toISOString(),\n  labels: input.labelIds || [],\n};\n"
+      },
+      "id": "0ac188b6-d2a2-4467-b51c-d6d9455cfd18",
+      "name": "Function - Extract Email Data",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -1980,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Your comprehensive personal/professional profile\nconst profile = {\n  // Basic Information\n  name: \"Alex Johnson\",\n  role: \"Senior Product Manager\",\n  company: \"TechCorp Solutions\",\n  email: \"alex.johnson@techcorp.com\",\n  \n  // Personality & Communication Style\n  personalityTraits: [\n    \"professional but approachable\",\n    \"detail-oriented and analytical\",\n    \"collaborative team player\",\n    \"results-driven\",\n    \"responsive and reliable\"\n  ],\n  \n  communicationStyle: {\n    tone: \"Professional yet warm and friendly\",\n    style: \"Clear, concise, and action-oriented\",\n    signatureStyle: \"Best regards\",\n    preferredGreeting: \"Hi [Name]\",\n    responseLength: \"concise but complete\"\n  },\n  \n  // Professional Details\n  expertise: [\n    \"Product Strategy & Roadmapping\",\n    \"Agile Project Management\",\n    \"Cross-functional Team Leadership\",\n    \"Market Analysis & User Research\",\n    \"Technical Product Development\"\n  ],\n  \n  responsibilities: [\n    \"Leading product development initiatives\",\n    \"Managing stakeholder relationships\",\n    \"Coordinating cross-functional teams\",\n    \"Strategic planning and execution\",\n    \"Customer feedback analysis\"\n  ],\n  \n  // Availability & Scheduling\n  availability: {\n    workingHours: \"9:00 AM - 6:00 PM EST\",\n    timezone: \"America/New_York\",\n    preferredMeetingDays: [\"Tuesday\", \"Wednesday\", \"Thursday\"],\n    preferredMeetingTimes: [\"10:00 AM\", \"2:00 PM\", \"3:00 PM\"],\n    bufferBetweenMeetings: 15, // minutes\n    maxMeetingsPerDay: 6,\n    lunchBreak: \"12:00 PM - 1:00 PM\"\n  },\n  \n  // Email Response Rules\n  responseRules: {\n    standardResponseTime: \"Within 24 hours\",\n    urgentResponseTime: \"Within 2 hours\",\n    autoReplyThreshold: 0.8, // confidence level\n    escalationKeywords: [\"urgent\", \"asap\", \"emergency\", \"critical\", \"deadline\"],\n    skipAutoReply: [\"newsletter\", \"unsubscribe\", \"automated\", \"no-reply\"],\n    requireApprovalFor: [\"high\", \"urgent\"],\n    maxAutoResponseLength: 300\n  },\n  \n  // Response Templates by Category\n  templates: {\n    meeting: \"Thanks for reaching out! I'd be happy to discuss this further. Let me check my calendar and propose some available times that work for both of us.\",\n    \n    project: \"Thank you for the project update/request. I'll review the details carefully and get back to you with my thoughts and next steps shortly.\",\n    \n    support: \"I've received your request and understand the importance of resolving this quickly. I'll look into this matter and provide you with an update as soon as possible.\",\n    \n    sales: \"Thank you for your interest in our solutions. I'd be happy to discuss how we can help address your needs. Let me connect you with the right team member or schedule a time to chat.\",\n    \n    general: \"Thanks for your email. I'll review this and get back to you soon with a proper response.\",\n    \n    followUp: \"Just wanted to follow up on our previous conversation. Please let me know if you need any additional information or if there's anything else I can help with.\"\n  },\n  \n  // Context & Relationships\n  keyContacts: {\n    // This would be populated with important contacts\n    // Format: email -> relationship/context\n  },\n  \n  currentProjects: [\n    \"Q2 Product Launch\",\n    \"Customer Analytics Dashboard\",\n    \"API Integration Project\",\n    \"User Experience Optimization\"\n  ],\n  \n  // Meeting Preferences\n  meetingPreferences: {\n    defaultDuration: 30, // minutes\n    preferredPlatform: \"Google Meet\",\n    sendCalendarInvites: true,\n    includeAgenda: true,\n    bufferTime: 5, // minutes before/after\n    maxConsecutiveMeetings: 3\n  },\n  \n  // Auto-response Configuration\n  autoResponseConfig: {\n    enabled: true,\n    officeHoursOnly: true,\n    weekendsEnabled: false,\n    holidaysEnabled: false,\n    outOfOfficeRespectEnabled: true\n  }\n};\n\nreturn { \n  profile,\n  loadedAt: new Date().toISOString()\n};"
+      },
+      "id": "2ee41d1e-f595-4cad-8caf-00a2ed558ee4",
+      "name": "Function - Load Personal Profile",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -1520,
+        380
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "condition1",
+              "leftValue": "={{ $('Function - Parse AI Analysis').item.json.category }}",
+              "rightValue": "meeting",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "condition2",
+              "leftValue": "={{ JSON.stringify($(\"Function - Parse AI Analysis\").item.json.originalEmail) }}\n",
+              "rightValue": "meeting",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "condition3",
+              "leftValue": "={{ JSON.stringify($(\"Function - Parse AI Analysis\").item.json.originalEmail) }}\n",
+              "rightValue": "schedule",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "condition4",
+              "leftValue": "={{ JSON.stringify($(\"Function - Parse AI Analysis\").item.json.originalEmail) }}\n",
+              "rightValue": "call",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "condition5",
+              "leftValue": "={{ JSON.stringify($(\"Function - Parse AI Analysis\").item.json.originalEmail) }}\n",
+              "rightValue": "calendar",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "3acc5a84-621e-4800-9193-b64cfca1a556",
+      "name": "IF - Meeting Related",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1320,
+        20
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "charoliazeeshan@gmail.com",
+          "mode": "list",
+          "cachedResultName": "charoliazeeshan@gmail.com"
+        },
+        "timeMin": "={{ DateTime.now().toISO() }}",
+        "timeMax": "={{ DateTime.now().plus({days: 14}).toISO() }}",
+        "options": {}
+      },
+      "id": "615fcbfd-c5e0-4b7f-b27e-a14581650bfd",
+      "name": "Google Calendar - Get Availability",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.2,
+      "position": [
+        -1100,
+        20
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "YiwVKrKHvDSFJ2aw",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "condition1",
+              "leftValue": "={{ $json.responseMetadata.requiresApproval }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "94fa8668-c3c0-4e5a-b072-0f2fc9b41071",
+      "name": "IF - Requires Human Approval",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "text": "=🚨 **High Priority Email Response - Approval Required**\n\n**📧 Email Details:**\n• **From:** {{ $json.originalEmail.from }}\n• **Subject:** {{ $json.originalEmail.subject }}\n• **Category:** {{ $json.emailAnalysis.category }}\n• **Importance:** {{ $json.emailAnalysis.importance }}\n• **Urgency:** {{ $json.emailAnalysis.urgency }}\n• **Confidence:** {{ Math.round($json.emailAnalysis.confidence * 100) }}%\n\n**🤖 Proposed Response:**\n```\n{{ $json.generatedResponse }}\n```\n\n**📊 Response Metrics:**\n• **Length:** {{ $json.responseMetadata.metrics.responseLength }} ({{ $json.responseMetadata.metrics.wordCount }} words)\n• **Approval Reason:** {{ $json.responseMetadata.approvalReason }}\n\n**🎯 Quick Actions:**\n• ✅ React with ✅ to approve and send\n• ✏️ React with ✏️ to edit before sending\n• ❌ React with ❌ to reject\n\n**📧 Email ID:** {{ $json.originalEmail.emailId }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": true,
+          "mrkdwn": true
+        }
+      },
+      "id": "cf0e24d7-c739-4d66-88a5-cdf1bae0b37c",
+      "name": "Slack - Send Approval Request",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        100
+      ],
+      "webhookId": "7ab3a2d9-1361-40a6-9395-640cfe735ca0",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ $json.originalEmail.emailId }}",
+        "message": "={{ $json.generatedResponse }}",
+        "options": {}
+      },
+      "id": "e0d65a03-7d18-4afe-b468-ad70511df000",
+      "name": "Gmail - Send Auto Response",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        220,
+        400
+      ],
+      "webhookId": "34fd8d0b-cfa6-409d-a39e-7b7749a5f439",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "uEx8jgP9x4FK6eZj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Function - Extract Email Data').item.json.emailId }}",
+        "labelIds": [
+          "INBOX"
+        ]
+      },
+      "id": "5d72a64d-a02c-410a-a1eb-be043dc9b4f1",
+      "name": "Gmail - Mark as Read",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        480,
+        400
+      ],
+      "webhookId": "22a6b2d6-2638-4732-923c-9d6855b1d0e6",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "uEx8jgP9x4FK6eZj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "condition1",
+              "leftValue": "={{ $('Function - Parse AI Analysis').item.json.category }}",
+              "rightValue": "meeting",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "condition2",
+              "leftValue": "={{ $('Function - Response Processing').item.json.generatedResponse }}",
+              "rightValue": "calendar",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "872c249a-c998-4c6a-8ff1-01456815df29",
+      "name": "IF - Meeting Response Sent",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        760,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "primary",
+          "mode": "list",
+          "cachedResultName": "Primary"
+        },
+        "start": "={{ $node[\"Function - Analyze Calendar Availability\"].json.availableSlots[0]?.start || DateTime.now().plus({days: 1}).set({hour: 10, minute: 0}).toISO() }}",
+        "end": "={{ $node[\"Function - Analyze Calendar Availability\"].json.availableSlots[0]?.end || DateTime.now().plus({days: 1}).set({hour: 10, minute: 30}).toISO() }}",
+        "additionalFields": {}
+      },
+      "id": "cfe843c0-61f0-4f8b-8275-36b24893fa44",
+      "name": "Google Calendar - Create Tentative Meeting",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.2,
+      "position": [
+        1060,
+        -120
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "YiwVKrKHvDSFJ2aw",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "condition1",
+              "leftValue": "={{ $('Function - Parse AI Analysis').item.json.category }}",
+              "rightValue": "newsletter",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "condition2",
+              "leftValue": "={{ $('Function - Parse AI Analysis').item.json.category }}",
+              "rightValue": "spam",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "condition3",
+              "leftValue": "={{ $('Function - Parse AI Analysis').item.json.isAutomated }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "bf175ab5-aaea-4ca2-b3d4-6b1da90fe48a",
+      "name": "IF - Auto Archive Check",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        900,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.originalEmail.emailId }}",
+        "labelIds": [
+          "INBOX"
+        ]
+      },
+      "id": "26468251-07b7-46d7-a710-df2bfbaa8c89",
+      "name": "Gmail - Auto Archive",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1220,
+        500
+      ],
+      "webhookId": "8b8dcd3c-f36e-43e1-820b-ce96bc80af60",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "uEx8jgP9x4FK6eZj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "13g_gycfTMOnPTe77ZUTXmbGtFS_m0_3TGG0xTSbT2Ew",
+          "mode": "list",
+          "cachedResultName": "Email Activity Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13g_gycfTMOnPTe77ZUTXmbGtFS_m0_3TGG0xTSbT2Ew/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Email_Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13g_gycfTMOnPTe77ZUTXmbGtFS_m0_3TGG0xTSbT2Ew/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{ new Date().toISOString() }}",
+            "thread_id": "={{ $json.threadId }}",
+            "email_id": "={{ $('Function - Parse AI Analysis').item.json.originalEmail.emailId }}",
+            "confidence": "={{ $('Function - Parse AI Analysis').item.json.confidence }}",
+            "sentiment": "={{ $('Function - Parse AI Analysis').item.json.sentiment }}",
+            "urgency": "={{ $('Function - Parse AI Analysis').item.json.urgency }}",
+            "importance": "={{ $('Function - Parse AI Analysis').item.json.importance }}",
+            "category": "={{ $('Function - Parse AI Analysis').item.json.category }}",
+            "sender_email": "={{ $('Function - Parse AI Analysis').item.json.originalEmail.senderEmail }}",
+            "auto_sent": "={{ $('Function - Response Processing').item.json.responseMetadata.autoSendEligible }}",
+            "subject": "={{ $('Function - Response Processing').item.json.emailAnalysis.originalEmail.subject }}"
+          },
+          "matchingColumns": [
+            "email_id"
+          ],
+          "schema": [
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email_id",
+              "displayName": "email_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "thread_id",
+              "displayName": "thread_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "subject",
+              "displayName": "subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sender_email",
+              "displayName": "sender_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "importance",
+              "displayName": "importance",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "urgency",
+              "displayName": "urgency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "auto_sent",
+              "displayName": "auto_sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "confidence",
+              "displayName": "confidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sentiment",
+              "displayName": "sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "1b475770-c57a-4009-a455-332783aa7f47",
+      "name": "Google Sheets - Log Email Activity",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [
+        880,
+        180
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "I3CfTJ62XPCtsqFP",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://mad-assignment-efee3-default-rtdb.firebaseio.com/.json",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "date",
+              "value": "={{ DateTime.now().toISODate() }}"
+            },
+            {
+              "name": "timestamp",
+              "value": "={{ DateTime.now().toISO() }}"
+            },
+            {
+              "name": "email_processed",
+              "value": "1"
+            },
+            {
+              "name": "category",
+              "value": "={{ $json.originalData.analysis.category }}"
+            },
+            {
+              "name": "importance",
+              "value": "={{ $json.originalData.analysis.importance }}"
+            },
+            {
+              "name": "urgency",
+              "value": "={{ $json.originalData.analysis.urgency }}"
+            },
+            {
+              "name": "confidence_score",
+              "value": "={{ $json.originalData.analysis.confidence }}"
+            },
+            {
+              "name": "response_auto_sent",
+              "value": "={{ $json.originalData.response ? 1 : 0 }}"
+            },
+            {
+              "name": "engagement_score",
+              "value": "={{ $json.conversationContext.engagementScore }}"
+            },
+            {
+              "name": "sender_email",
+              "value": "={{ $json.conversationContext.senderEmail }}"
+            },
+            {
+              "name": "thread_id",
+              "value": "={{ $json.conversationContext.threadId }}"
+            },
+            {
+              "name": "key_topics",
+              "value": "={{ $json.conversationContext.keyTopics.join(',') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6665994e-d9e1-44ef-a82f-04bc6e055c84",
+      "name": "HTTP - Update Analytics Dashboard",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1560,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://mad-assignment-efee3-default-rtdb.firebaseio.com/reminders.json",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"emailId\": \"{{ $('Function - Parse AI Analysis').item.json.originalEmail.emailId }}\",\n  \"threadId\": \"{{ $('Function - Parse AI Analysis').item.json.originalEmail.threadId }}\",\n  \"importance\": \"{{ $('Function - Parse AI Analysis').item.json.importance }}\",\n  \"scheduledTime\": \"{{ DateTime.now().plus({ days: $('Google Sheets - Log Email Activity').item.json.importance === 'high' ? 1 : 3 }).toISO() }}\",\n  \"senderEmail\": \"{{ $('Function - Track Conversion').item.json.originalData.email.senderEmail }}\",\n  \"followUpRecommendations\": \"{{ $('Function - Track Conversion').item.json.conversationContext.followUpRecommendations }}\",\n  \"status\": \"pending\",\n  \"createdAt\": \"{{ DateTime.now().toISO() }}\"\n}",
+        "options": {}
+      },
+      "id": "da222b10-5349-4d16-a947-826a8445277b",
+      "name": "HTTP - Create Follow-up Reminder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1480,
+        200
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "fa16b283-506e-46e3-bc1c-10441b98a68b",
+      "name": "Merge - Combine All Branches",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [
+        2020,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "84e8a9e0-c46f-4514-bd87-467fd8114ad8",
+      "name": "Split In Batches - Continue Processing",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2260,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-3.5-TURBO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={\n  \"role\": \"system\",\n  \"content\": \"You are an expert at categorizing emails. You will return only a single JSON object — not a list, not wrapped in markdown — just raw JSON. It must match this format exactly:\\n\\n{\\n  \\\"importance\\\": \\\"high|medium|low\\\",\\n  \\\"category\\\": \\\"meeting|project|sales|support|personal|newsletter|spam\\\",\\n  \\\"urgency\\\": \\\"urgent|normal|low\\\",\\n  \\\"requiresResponse\\\": true|false,\\n  \\\"sentiment\\\": \\\"positive|neutral|negative\\\",\\n  \\\"intent\\\": \\\"brief description of the sender's intent\\\",\\n  \\\"suggestedAction\\\": \\\"reply|schedule|forward|archive|flag\\\",\\n  \\\"confidence\\\": float between 0.0 and 1.0\\n}\\n\\n⚠️ Return only the JSON object and nothing else — no markdown, no commentary.\"\n}\n{\n  \"role\": \"user\",\n  \"content\": \"Analyze the following email:\\nSubject: {{ $json.subject }}\\nFrom: {{ $json.from }}\\nBody: {{ $json.body }}\"\n}\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -2000,
+        20
+      ],
+      "id": "146da2b3-a5ce-478c-a98e-801add19b19e",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "QoPlpoqJWMZ29Tam",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-3.5-TURBO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=[\n  {\n    \"role\": \"system\",\n    \"content\": \"You are an AI assistant representing {{ $('Function - Load Personal Profile').item.json.profile.name }}.\\n\\nPersonal Profile:\\n- Role: {{ $('Function - Load Personal Profile').item.json.profile.role }}\\n- Company: {{ $('Function - Load Personal Profile').item.json.profile.company }}\\n- Communication Style: {{ $('Function - Load Personal Profile').item.json.profile.communicationStyle }}\\n- Personality: {{ $('Function - Load Personal Profile').item.json.profile.personalityTraits.join() }}\\n\\nRules:\\n1. Write in first person as if you are the person\\n2. Match their communication style\\n3. Be helpful and professional\\n4. If scheduling is mentioned, offer specific available times\\n5. Keep responses concise but complete\\n6. End with appropriate next steps\\n\\nEmail Analysis:\\n- Importance:{{ $('Function - Parse AI Analysis').item.json.importance }} \\n- Category:{{ $('Function - Parse AI Analysis').item.json.category }}\\n- Intent:{{ $('Function - Parse AI Analysis').item.json.intent }} \\n- Suggested Action: {{ $('Function - Parse AI Analysis').item.json.suggestedAction }}\"\n  },\n  {\n    \"role\": \"user\",\n    \"content\": \"Original Email:\\nSubject:{{ $('Function - Parse AI Analysis').item.json.originalEmail.subject }}\\nFrom:{{ $('Function - Parse AI Analysis').item.json.originalEmail.senderEmail }}\\nBody:{{ $('Function - Parse AI Analysis').item.json.originalEmail.body }} \\n\\n{% if $json.category === 'meeting' %}Available Time Slots:\\n{% for slot in $json.availableSlots %}{{ $json.availableSlots[0].formatted }}\\n{% endfor %}{% endif %}\\n\\nGenerate an appropriate response email.\"\n  }\n]\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -600,
+        -120
+      ],
+      "id": "02281c7c-4f0c-4cd0-a7ad-adca4bcac311",
+      "name": "OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "QoPlpoqJWMZ29Tam",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const aiResponse = $json.message.content;\n\nif (!aiResponse) {\n  throw new Error(\"No response from OpenAI\");\n}\n\nlet analysis;\n\ntry {\n  const cleanResponse = aiResponse.replace(/```json\\n?|```/g, '').trim();\n  analysis = JSON.parse(cleanResponse);\n\n  // ✅ If it's an array, take the first object\n  if (Array.isArray(analysis)) {\n    analysis = analysis[0];\n  }\n\n  // ✅ Fallbacks for missing fields\n  if (!analysis.importance) analysis.importance = 'medium';\n  if (!analysis.category) analysis.category = 'general';\n  if (!analysis.urgency) analysis.urgency = 'normal';\n  if (analysis.requiresResponse === undefined) analysis.requiresResponse = true;\n  if (!analysis.sentiment) analysis.sentiment = 'neutral';\n  if (!analysis.suggestedAction) analysis.suggestedAction = 'reply';\n  if (!analysis.confidence) analysis.confidence = 0.7;\n  if (!analysis.keyTopics) analysis.keyTopics = [];\n  if (analysis.isAutomated === undefined) analysis.isAutomated = false;\n\n} catch (error) {\n  console.log('JSON parsing failed:', error.message);\n  console.log('Raw response:', aiResponse);\n  \n  analysis = {\n    importance: 'medium',\n    category: 'general',\n    urgency: 'normal',\n    requiresResponse: true,\n    sentiment: 'neutral',\n    intent: 'Unable to parse AI response',\n    suggestedAction: 'reply',\n    confidence: 0.5,\n    keyTopics: [],\n    isAutomated: false,\n    parseError: true\n  };\n}\n\nconst originalEmail = $node[\"Function - Extract Email Data\"].json;\n\nreturn {\n  ...analysis,\n  originalEmail,\n  aiResponseRaw: aiResponse,\n  processedAt: new Date().toISOString()\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1680,
+        20
+      ],
+      "id": "7c1bf618-c984-4d4e-8809-f02209e24b4e",
+      "name": "Function - Parse AI Analysis"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Process the AI-generated response and add metadata\nconst aiResponse = $json.message.content;\nconst emailData = $('Function - Parse AI Analysis').item.json.originalEmail;\nconst analysis = $(\"Function - Parse AI Analysis\").item.json;\nconst profile = $('Function - Load Personal Profile').item.json.profile;\n\n// Clean and format the response\nlet cleanResponse = aiResponse.trim();\n\n// Add signature if not present\nif (!cleanResponse.includes(profile.communicationStyle.signatureStyle)) {\n  cleanResponse += `\\n\\n${profile.communicationStyle.signatureStyle},\\n${profile.name}`;\n}\n\n// Calculate response metrics\nconst responseMetrics = {\n  wordCount: cleanResponse.split(' ').length,\n  characterCount: cleanResponse.length,\n  estimatedReadTime: Math.ceil(cleanResponse.split(' ').length / 200), // minutes\n  responseLength: cleanResponse.length < 150 ? 'short' : cleanResponse.length < 300 ? 'medium' : 'long'\n};\n\n// Determine if approval is needed based on rules\nconst requiresApproval = \n  analysis.importance === 'high' || \n  analysis.urgency === 'urgent' ||\n  analysis.confidence < 0.7 ||\n  emailData.senderEmail.includes('@competitor.com') || // Add your competitor domains\n  cleanResponse.length > profile.responseRules.maxAutoResponseLength;\n\nreturn {\n  generatedResponse: cleanResponse,\n  originalEmail: emailData,\n  emailAnalysis: analysis,\n  responseMetadata: {\n    generatedAt: new Date().toISOString(),\n    model: 'gpt-4',\n    confidence: analysis.confidence,\n    requiresApproval,\n    approvalReason: requiresApproval ? \n      (analysis.importance === 'high' ? 'High importance' :\n       analysis.urgency === 'urgent' ? 'Urgent priority' :\n       analysis.confidence < 0.7 ? 'Low confidence' :\n       'Response too long') : null,\n    metrics: responseMetrics,\n    category: analysis.category,\n    autoSendEligible: !requiresApproval\n  },\n  profileUsed: {\n    name: profile.name,\n    role: profile.role,\n    responseStyle: profile.communicationStyle.style\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -440,
+        180
+      ],
+      "id": "e78093d2-c09f-4e40-8e06-eb55160add0a",
+      "name": "Function - Response Processing"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Analyze calendar and find available meeting slots\nconst events = $json.items || [];\nconst profile = $node[\"Function - Load Personal Profile\"].json.profile;\nconst emailAnalysis = $node[\"Function - Parse AI Analysis\"].json;\n\n// Configuration from profile\nconst workStart = 9; // 9 AM\nconst workEnd = 18; // 6 PM\nconst lunchStart = 12; // 12 PM\nconst lunchEnd = 13; // 1 PM\nconst meetingDuration = 30; // 30 minutes default\nconst bufferTime = 15; // 15 minutes buffer\n\n// Generate available slots for next 14 days\nconst availableSlots = [];\nconst now = new Date();\n\nfor (let day = 0; day < 14; day++) {\n  const date = new Date(now);\n  date.setDate(date.getDate() + day);\n  \n  // Skip weekends\n  const dayOfWeek = date.getDay();\n  if (dayOfWeek === 0 || dayOfWeek === 6) continue;\n  \n  // Skip if it's today but already past work hours\n  if (day === 0 && now.getHours() >= 17) continue;\n  \n  // Check each 30-minute slot during work hours\n  for (let hour = workStart; hour < workEnd; hour++) {\n    for (let minute = 0; minute < 60; minute += 30) {\n      // Skip lunch hour\n      if (hour >= lunchStart && hour < lunchEnd) continue;\n      \n      const slotStart = new Date(date);\n      slotStart.setHours(hour, minute, 0, 0);\n      \n      // Skip past time slots for today\n      if (day === 0 && slotStart <= now) continue;\n      \n      const slotEnd = new Date(slotStart);\n      slotEnd.setMinutes(slotEnd.getMinutes() + meetingDuration);\n      \n      // Check for conflicts with existing events\n      const hasConflict = events.some(event => {\n        if (!event.start || !event.end) return false;\n        \n        const eventStart = new Date(event.start.dateTime || event.start.date);\n        const eventEnd = new Date(event.end.dateTime || event.end.date);\n        \n        // Check for overlap (including buffer time)\n        const bufferStart = new Date(slotStart);\n        bufferStart.setMinutes(bufferStart.getMinutes() - bufferTime);\n        const bufferEnd = new Date(slotEnd);\n        bufferEnd.setMinutes(bufferEnd.getMinutes() + bufferTime);\n        \n        return (bufferStart < eventEnd && bufferEnd > eventStart);\n      });\n      \n      if (!hasConflict) {\n        const dayName = slotStart.toLocaleDateString('en-US', { weekday: 'long' });\n        const timeString = slotStart.toLocaleTimeString('en-US', { \n          hour: 'numeric', \n          minute: '2-digit',\n          hour12: true \n        });\n        \n        availableSlots.push({\n          start: slotStart.toISOString(),\n          end: slotEnd.toISOString(),\n          formatted: `${dayName}, ${slotStart.toLocaleDateString()} at ${timeString}`,\n          dayOfWeek: dayName,\n          date: slotStart.toLocaleDateString(),\n          time: timeString,\n          timestamp: slotStart.getTime()\n        });\n      }\n    }\n  }\n}\n\n// Sort by timestamp and limit to top 5 slots\navailableSlots.sort((a, b) => a.timestamp - b.timestamp);\nconst topSlots = availableSlots.slice(0, 5);\n\n// Generate calendar summary\nconst calendarSummary = {\n  totalEvents: events.length,\n  upcomingEvents: events.filter(e => {\n    const eventStart = new Date(e.start?.dateTime || e.start?.date);\n    return eventStart > now;\n  }).length,\n  availableSlots: topSlots.length,\n  nextAvailable: topSlots[0] || null\n};\n\nreturn {\n  availableSlots: topSlots,\n  calendarEvents: events,\n  calendarSummary,\n  originalAnalysis: emailAnalysis,\n  profileData: profile,\n  processedAt: new Date().toISOString()\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -880,
+        20
+      ],
+      "id": "c27c6b1c-c3b2-453e-98b7-c7c7a0a1c302",
+      "name": "Function - Analyze Calendar Availability"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Create conversation context tracking\nconst emailData = $('Function - Parse AI Analysis').item.json.originalEmail;\nconst analysis = {\n  category: $json.category,\n  importance: $json.importance,\n  urgency: $json.urgency,\n  sentiment: $json.sentiment,\n  requiresResponse: $json.requiresResponse,\n  confidence: $json.confidence,\n  keyTopics: $json.keyTopics || []\n};\nconst response = $('Function - Response Processing').item.json.generatedResponse;\n\n// Extract conversation context\nconst threadId = emailData.threadId;\nconst senderEmail = emailData.senderEmail;\n\n// Determine conversation stage\nlet conversationStage = 'initial';\nif (emailData.subject && emailData.subject.toLowerCase().includes('re:')) {\n  conversationStage = 'ongoing';\n}\nif (\n  response &&\n  response.toLowerCase().includes('thank you') &&\n  response.toLowerCase().includes('let me know')\n) {\n  conversationStage = 'closing';\n}\n\n\n// Extract key topics and entities\nconst keyTopics = $('Function - Parse AI Analysis').item.json.keyTopics || [];\nconst bodyLower = emailData.body.toLowerCase();\n\n// Add context-specific topics\nif (bodyLower.includes('project')) keyTopics.push('project');\nif (bodyLower.includes('meeting')) keyTopics.push('meeting');\nif (bodyLower.includes('deadline')) keyTopics.push('deadline');\nif (bodyLower.includes('budget')) keyTopics.push('budget');\nif (bodyLower.includes('proposal')) keyTopics.push('proposal');\n\n// Generate follow-up recommendations\nconst followUpRecommendations = [];\nif (analysis.category === 'meeting' && !response.includes('calendar')) {\n  followUpRecommendations.push('Send calendar invite once time is confirmed');\n}\nif (analysis.urgency === 'urgent' && !$('IF - Requires Human Approval').item.json.responseMetadata.requiresApproval) {\n  followUpRecommendations.push('Monitor for response within 4 hours');\n}\nif (analysis.importance === 'high') {\n  followUpRecommendations.push('Follow up if no response within 24 hours');\n}\n\n// Calculate engagement score\nlet engagementScore = 0.5; // base score\nif (analysis.sentiment === 'positive') engagementScore += 0.2;\nif (analysis.importance === 'high') engagementScore += 0.2;\nif (analysis.category === 'meeting') engagementScore += 0.1;\nif (keyTopics.length > 2) engagementScore += 0.1;\nengagementScore = Math.min(1.0, engagementScore);\n\nconst conversationContext = {\n  threadId,\n  senderEmail,\n  senderName: emailData.senderName,\n  conversationStage,\n  keyTopics: [...new Set(keyTopics)], // Remove duplicates\n  lastInteractionAt: new Date().toISOString(),\n  responseGenerated: true,\n  engagementScore,\n  followUpRecommendations,\n  conversationMetrics: {\n    emailCount: 1, // This would be tracked across conversations\n    avgResponseTime: '< 5 minutes', // Auto-response\n    lastResponseMethod: 'automated',\n    topicsDiscussed: keyTopics.length\n  },\n  nextSuggestedActions: [\n    analysis.category === 'meeting' ? 'calendar_management' : 'monitor_response',\n    analysis.urgency === 'urgent' ? 'priority_follow_up' : 'standard_follow_up'\n  ]\n};\n\nreturn {\n  conversationContext,\n  originalData: {\n    email: emailData,\n    analysis,\n    response: response.substring(0, 100) + '...' // Truncated for storage\n  },\n  trackingId: `${threadId}_${Date.now()}`,\n  createdAt: new Date().toISOString()\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1180,
+        180
+      ],
+      "id": "f87a927d-35f6-4c81-b12a-8062bbec1c8f",
+      "name": "Function - Track Conversion"
+    },
+    {
+      "parameters": {
+        "content": "## Email Monitoring &\n## Retrieval\n",
+        "height": 340,
+        "width": 680
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3380,
+        100
+      ],
+      "id": "030e0556-db69-4686-a1de-aa90a260e03e",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Email Processing & Analysis",
+        "height": 300,
+        "width": 840,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2600,
+        360
+      ],
+      "id": "4bb714bc-5478-470a-ae0a-508342780831",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## AI-Powered Email Categorization\n",
+        "height": 240,
+        "width": 560,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2080,
+        -80
+      ],
+      "id": "95640ded-4172-4497-a297-8044092fab37",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Personal Profile Loading",
+        "height": 220,
+        "width": 280
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1640,
+        300
+      ],
+      "id": "5ed329ae-9b3a-4f6c-b6eb-e90923e0942f",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Calendar Integration & Availability Check",
+        "height": 280,
+        "width": 600,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1360,
+        -40
+      ],
+      "typeVersion": 1,
+      "id": "c27855a0-9211-4041-a6a1-b0a65583ef93",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## AI Response Generation",
+        "height": 200,
+        "width": 340,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -640,
+        -180
+      ],
+      "typeVersion": 1,
+      "id": "2b3dd1ed-025c-41ab-b035-3c2df6297b87",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Response Quality Control & Approval",
+        "height": 260,
+        "width": 660,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -520,
+        80
+      ],
+      "typeVersion": 1,
+      "id": "6ab961ea-6e2f-47fc-86d6-280eeacde3da",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## Calendar Integration for Meetings",
+        "height": 260,
+        "width": 600,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        660,
+        -180
+      ],
+      "typeVersion": 1,
+      "id": "d956d754-6585-4fba-b601-e2df46f8dad7",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "## Automated Response Sending",
+        "height": 220,
+        "width": 540
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        140,
+        340
+      ],
+      "typeVersion": 1,
+      "id": "12fa3575-684f-4c8c-82c3-e3fc3ee57e76",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "## Follow Up and Reminder System and Analytics\n",
+        "height": 220,
+        "width": 840,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        780,
+        160
+      ],
+      "typeVersion": 1,
+      "id": "da401436-9df9-4a83-ad77-de6a3c1674d7",
+      "name": "Sticky Note9"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger - Email Check": {
+      "main": [
+        [
+          {
+            "node": "Gmail - Get Unread Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail - Get Unread Messages": {
+      "main": [
+        [
+          {
+            "node": "IF - Has New Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Has New Emails": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches - Process Individual Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split In Batches - Process Individual Emails": {
+      "main": [
+        [
+          {
+            "node": "Gmail - Get Message Details",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gmail - Get Message Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail - Get Message Details": {
+      "main": [
+        [
+          {
+            "node": "Function - Extract Email Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function - Load Personal Profile": {
+      "main": [
+        [
+          {
+            "node": "IF - Meeting Related",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Meeting Related": {
+      "main": [
+        [
+          {
+            "node": "Google Calendar - Get Availability",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar - Get Availability": {
+      "main": [
+        [
+          {
+            "node": "Function - Analyze Calendar Availability",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Requires Human Approval": {
+      "main": [
+        [
+          {
+            "node": "Gmail - Send Auto Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gmail - Send Auto Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail - Send Auto Response": {
+      "main": [
+        [
+          {
+            "node": "Gmail - Mark as Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail - Mark as Read": {
+      "main": [
+        [
+          {
+            "node": "IF - Meeting Response Sent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "IF - Auto Archive Check",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Google Sheets - Log Email Activity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Meeting Response Sent": {
+      "main": [
+        [
+          {
+            "node": "Google Calendar - Create Tentative Meeting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Auto Archive Check": {
+      "main": [
+        [
+          {
+            "node": "Gmail - Auto Archive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - Log Email Activity": {
+      "main": [
+        [
+          {
+            "node": "Function - Track Conversion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP - Update Analytics Dashboard": {
+      "main": [
+        [
+          {
+            "node": "HTTP - Create Follow-up Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP - Create Follow-up Reminder": {
+      "main": [
+        [
+          {
+            "node": "Merge - Combine All Branches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack - Send Approval Request": {
+      "main": [
+        [
+          {
+            "node": "Merge - Combine All Branches",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge - Combine All Branches": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches - Continue Processing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split In Batches - Continue Processing": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches - Process Individual Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function - Extract Email Data": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Function - Parse AI Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI1": {
+      "main": [
+        [
+          {
+            "node": "Function - Response Processing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function - Parse AI Analysis": {
+      "main": [
+        [
+          {
+            "node": "Function - Load Personal Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function - Response Processing": {
+      "main": [
+        [
+          {
+            "node": "IF - Requires Human Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function - Analyze Calendar Availability": {
+      "main": [
+        [
+          {
+            "node": "OpenAI1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function - Track Conversion": {
+      "main": [
+        [
+          {
+            "node": "HTTP - Update Analytics Dashboard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e220d1e2-dd5e-476a-a8e2-0f53d31fb3a0",
+  "meta": {
+    "instanceId": "86da7a6ff1d9afdb04ad1740dcf05d157548e548a356b1aa45089d4aa7e20443"
+  },
+  "id": "BWGvuVQTGUZs7y90",
+  "tags": [
+    {
+      "name": "email-automation",
+      "id": "Pg8NRKt73JagxfgN",
+      "createdAt": "2025-06-24T10:43:48.439Z",
+      "updatedAt": "2025-06-24T10:43:48.439Z"
+    }
+  ]
+}
